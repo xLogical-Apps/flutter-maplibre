@@ -270,6 +270,18 @@ class StyleControllerAndroid extends StyleController {
   });
 
   @override
+  Future<void> setPlacementTransitions({required bool enabled}) async =>
+      using((arena) {
+        final current = _jStyle.transition..releasedBy(arena);
+        final next = jni.TransitionOptions.new$1(
+          current.duration,
+          current.delay,
+          enabled,
+        )..releasedBy(arena);
+        _jStyle.transition = next;
+      });
+
+  @override
   Future<List<String>> getAttributions() async => getAttributionsSync();
 
   @override

@@ -1,3 +1,7 @@
+## Unreleased
+
+- Add `StyleController.setPlacementTransitions({required bool enabled})` to switch MapLibre's symbol placement transitions on Android and iOS. Disabling them lets the map render one frame per source update instead of re-rendering for the whole 300 ms fade window.
+
 ## 0.3.6
 
 Thanks for everyone who contributed in this release!
