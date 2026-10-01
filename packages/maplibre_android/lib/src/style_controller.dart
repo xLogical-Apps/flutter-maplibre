@@ -1,5 +1,11 @@
 part of 'map_state.dart';
 
+/// MapLibre's default paint property transition duration in milliseconds.
+const _defaultTransitionDurationMs = 300;
+
+/// MapLibre's default paint property transition delay in milliseconds.
+const _defaultTransitionDelayMs = 0;
+
 /// Android specific implementation of the [StyleController].
 class StyleControllerAndroid extends StyleController {
   const StyleControllerAndroid._(this._jStyle);
@@ -273,9 +279,16 @@ class StyleControllerAndroid extends StyleController {
   Future<void> setPlacementTransitions({required bool enabled}) async =>
       using((arena) {
         final current = _jStyle.transition..releasedBy(arena);
+        // MapLibre Native reports an unset duration and delay as 0 and would
+        // store an explicit 0 ms when written back, which silences the paint
+        // property transitions. Both values being 0 is therefore treated as
+        // "unset" and replaced by MapLibre's defaults. Limitation: an explicit
+        // `transition: {duration: 0, delay: 0}` in a style cannot be told
+        // apart from "unset" and is treated as unset.
+        final isUnset = current.duration == 0 && current.delay == 0;
         final next = jni.TransitionOptions.new$1(
-          current.duration,
-          current.delay,
+          isUnset ? _defaultTransitionDurationMs : current.duration,
+          isUnset ? _defaultTransitionDelayMs : current.delay,
           enabled,
         )..releasedBy(arena);
         _jStyle.transition = next;

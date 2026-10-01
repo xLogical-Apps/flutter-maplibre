@@ -51,13 +51,17 @@ abstract class StyleController {
   /// fade when labels and icons appear, disappear or are re-placed after a
   /// camera change or a source update).
   ///
-  /// With transitions disabled the map renders exactly one frame per
-  /// source update instead of re-rendering for the whole fade window,
-  /// which matters for apps that update sources several times per second.
+  /// Disabling them avoids re-rendering for the duration of the fade after
+  /// every source update or camera change, which matters for apps that update
+  /// sources several times per second.
+  ///
+  /// The setting belongs to the current style and has to be applied again
+  /// after a style (re)load.
   ///
   /// Android: `Style.setTransition` with the style's current duration and
-  /// delay. iOS: `MLNStyle.performsPlacementTransitions`. Web: no-op, the
-  /// map option `fadeDuration` is the equivalent there.
+  /// delay; an unset duration and delay are written as MapLibre's defaults
+  /// (300 ms / 0 ms). iOS: `MLNStyle.performsPlacementTransitions`. Web: no-op
+  /// (MapLibre GL JS only offers `fadeDuration` as a map construction option).
   Future<void> setPlacementTransitions({required bool enabled});
 
   /// Removes the layer with the given [id] from the map's style.
