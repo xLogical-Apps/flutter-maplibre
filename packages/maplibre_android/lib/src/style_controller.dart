@@ -1,10 +1,11 @@
 part of 'map_state.dart';
 
-/// MapLibre's default paint property transition duration in milliseconds.
-const _defaultTransitionDurationMs = 300;
+/// Duration in milliseconds MapLibre uses for the symbol fade and the
+/// dash/pattern crossfade while the style's transition duration is unset.
+const _unsetTransitionDurationMs = 300;
 
-/// MapLibre's default paint property transition delay in milliseconds.
-const _defaultTransitionDelayMs = 0;
+/// Delay in milliseconds written together with [_unsetTransitionDurationMs].
+const _unsetTransitionDelayMs = 0;
 
 /// Android specific implementation of the [StyleController].
 class StyleControllerAndroid extends StyleController {
@@ -279,16 +280,21 @@ class StyleControllerAndroid extends StyleController {
   Future<void> setPlacementTransitions({required bool enabled}) async =>
       using((arena) {
         final current = _jStyle.transition..releasedBy(arena);
-        // MapLibre Native reports an unset duration and delay as 0 and would
-        // store an explicit 0 ms when written back, which silences the paint
-        // property transitions. Both values being 0 is therefore treated as
-        // "unset" and replaced by MapLibre's defaults. Limitation: an explicit
-        // `transition: {duration: 0, delay: 0}` in a style cannot be told
-        // apart from "unset" and is treated as unset.
+        if (current.isEnablePlacementTransitions == enabled) return;
+        // The Android API can only set the placement flag together with
+        // duration and delay. MapLibre Native reports an unset duration and
+        // delay as 0. Writing 0 back would make the symbol fade instant once
+        // placement transitions are enabled again and would remove the
+        // dash/pattern crossfade, so an unset value is written as 300 ms, the
+        // duration MapLibre uses for both when unset.
+        // Side effect: once written, runtime paint property changes animate
+        // over 300 ms on Android (they are instant while the duration is
+        // unset). An explicit `transition: {duration: 0, delay: 0}` in a style
+        // cannot be told apart from unset.
         final isUnset = current.duration == 0 && current.delay == 0;
         final next = jni.TransitionOptions.new$1(
-          isUnset ? _defaultTransitionDurationMs : current.duration,
-          isUnset ? _defaultTransitionDelayMs : current.delay,
+          isUnset ? _unsetTransitionDurationMs : current.duration,
+          isUnset ? _unsetTransitionDelayMs : current.delay,
           enabled,
         )..releasedBy(arena);
         _jStyle.transition = next;

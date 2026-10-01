@@ -58,10 +58,12 @@ abstract class StyleController {
   /// The setting belongs to the current style and has to be applied again
   /// after a style (re)load.
   ///
-  /// Android: `Style.setTransition` with the style's current duration and
-  /// delay; an unset duration and delay are written as MapLibre's defaults
-  /// (300 ms / 0 ms). iOS: `MLNStyle.performsPlacementTransitions`. Web: no-op
-  /// (MapLibre GL JS only offers `fadeDuration` as a map construction option).
+  /// Android: `Style.setTransition`; the flag is written together with the
+  /// style's current duration and delay, and an unset duration is written as
+  /// 300 ms, which makes runtime paint property changes animate on Android.
+  /// Calling it with the value that is already set does nothing. iOS:
+  /// `MLNStyle.performsPlacementTransitions`. Web: no-op (MapLibre GL JS only
+  /// offers `fadeDuration` as a map construction option).
   Future<void> setPlacementTransitions({required bool enabled});
 
   /// Removes the layer with the given [id] from the map's style.
