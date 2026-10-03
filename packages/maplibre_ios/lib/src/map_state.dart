@@ -521,7 +521,9 @@ final class MapLibreMapStateIos extends MapLibreMapState {
       pitch: ffiCamera.pitch,
       bearing: ffiCamera.heading,
     );
-    setState(() => camera = mapCamera);
+    // No setState: the camera is published through a notifier, so only
+    // widgets reading it rebuild (see MapCameraNotifier).
+    camera = mapCamera;
     widget.onEvent?.call(MapEventMoveCamera(camera: mapCamera));
   }
 

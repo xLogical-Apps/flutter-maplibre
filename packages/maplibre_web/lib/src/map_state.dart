@@ -151,7 +151,9 @@ final class MapLibreMapStateWeb extends MapLibreMapState {
             pitch: _map.getPitch().toDouble(),
             bearing: _map.getBearing().toDouble(),
           );
-          setState(() => camera = mapCamera);
+          // No setState: the camera is published through a notifier, so
+          // only widgets reading it rebuild (see MapCameraNotifier).
+          camera = mapCamera;
           widget.onEvent?.call(MapEventMoveCamera(camera: mapCamera));
         }.toJS,
       );
