@@ -19,12 +19,26 @@ abstract class MapLibreMapState extends State<MapLibreMap>
   @override
   MapOptions get options => widget.options;
 
+  /// The current camera, published to [MapLibreMap.children] through
+  /// [MapCameraNotifier]. Assigning it notifies only the widgets that read
+  /// the camera; it does not rebuild the map widget, and without readers it
+  /// schedules no frame.
+  final cameraPublisher = MapCameraPublisher();
+
   @override
-  MapCamera? camera;
+  MapCamera? get camera => cameraPublisher.camera;
+
+  set camera(MapCamera? value) => cameraPublisher.publish(value);
 
   /// Set to true once the map is initialized and a [MapController.camera]
   /// is set.
   bool isInitialized = false;
+
+  @override
+  void dispose() {
+    cameraPublisher.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +47,12 @@ abstract class MapLibreMapState extends State<MapLibreMap>
         buildPlatformWidget(context),
         MapLibreInheritedModel(
           mapController: this,
-          mapCamera: camera,
-          child: isInitialized
-              ? Stack(children: widget.children)
-              : const SizedBox.shrink(),
+          child: MapCameraNotifier(
+            publisher: cameraPublisher,
+            child: isInitialized
+                ? Stack(children: widget.children)
+                : const SizedBox.shrink(),
+          ),
         ),
       ],
     );

@@ -78,7 +78,9 @@ final class MapLibreMapStateAndroid extends MapLibreMapState
           onCameraMove: () => using((arena) {
             final mapCamera = getCamera();
             if (mounted) {
-              setState(() => camera = mapCamera);
+              // No setState: the camera is published through a notifier,
+              // so only widgets reading it rebuild (see MapCameraNotifier).
+              camera = mapCamera;
               widget.onEvent?.call(MapEventMoveCamera(camera: mapCamera));
             }
           }),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:maplibre/maplibre.dart';
+import 'package:maplibre_platform_interface/src/widget/inherited_model.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../shared/mocks.dart';
@@ -30,6 +31,45 @@ void main() {
       final transform = tester.firstWidget(find.byType(Transform)) as Transform;
       expect(transform.transform.storage[0], isNot(isZero));
       expect(transform.transform.storage[1], isNot(isZero));
+    });
+
+    testWidgets('rotates when the camera changes', (tester) async {
+      MapCamera cameraWith({required double bearing}) => MapCamera(
+        center: const Geographic(lon: 0, lat: 0),
+        zoom: 0,
+        bearing: bearing,
+        pitch: 0,
+      );
+      final publisher = MapCameraPublisher()..publish(cameraWith(bearing: 10));
+      addTearDown(publisher.dispose);
+      final controller = MockMapController();
+      when(controller.getCamera).thenReturn(cameraWith(bearing: 10));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MapLibreInheritedModel(
+              mapController: controller,
+              child: MapCameraNotifier(
+                publisher: publisher,
+                child: const Stack(children: [MapCompass()]),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      final compassTransform = find.descendant(
+        of: find.byType(MapCompass),
+        matching: find.byType(Transform),
+      );
+      double sine() =>
+          tester.firstWidget<Transform>(compassTransform).transform.storage[1];
+      final before = sine();
+
+      publisher.publish(cameraWith(bearing: 90));
+      await tester.pump();
+
+      expect(sine(), isNot(closeTo(before, 0.01)));
     });
 
     testWidgets('reset rotation', (tester) async {

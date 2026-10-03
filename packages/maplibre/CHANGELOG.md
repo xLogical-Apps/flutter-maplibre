@@ -4,6 +4,10 @@
 
 - Android: calls on a `StyleController` whose native style was already released
   are ignored instead of aborting the process with a JNI error.
+- Camera changes no longer rebuild the whole `MapLibreMap` widget. Only
+  widgets that read `MapCamera.of(context)` rebuild on a camera change;
+  without such a widget a camera change schedules no Flutter frame.
+  `MapCompass` now reads the camera this way.
 
 ## 0.3.6
 

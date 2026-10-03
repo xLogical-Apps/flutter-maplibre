@@ -20,9 +20,11 @@ class App extends StatelessWidget {
       title: 'MapLibre Demo',
       home: Scaffold(
         body: MapLibreInheritedModel(
-          mapCamera: camera,
           mapController: controller,
-          child: Stack(children: children),
+          child: MapCameraNotifier(
+            publisher: MapCameraPublisher()..publish(camera),
+            child: Stack(children: children),
+          ),
         ),
       ),
     );
