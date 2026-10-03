@@ -32,6 +32,7 @@ class MapLibreView: NSObject, FlutterPlatformView, UIGestureRecognizerDelegate, 
         }
 
         _mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        ScaleBarLayoutGuard.install(on: _mapView)
         MapLibreRegistry.addMap(viewId: viewId, map: _mapView)
         _view.addSubview(_mapView)
         _mapView.delegate = self
