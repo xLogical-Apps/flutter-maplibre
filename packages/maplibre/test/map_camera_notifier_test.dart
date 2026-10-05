@@ -104,6 +104,20 @@ void main() {
       expect(publisher.hasReaders, isTrue);
     });
 
+    testWidgets('a first read right before dispose does not throw', (
+      tester,
+    ) async {
+      // The catch-up of the first read runs after the frame; by then the
+      // map, and with it the publisher, can already be disposed.
+      MapCameraPublisher()
+        ..publish(first)
+        ..markRead()
+        ..dispose();
+      tester.binding.scheduleFrame();
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('MapCamera.of throws outside of a map', (tester) async {
       late BuildContext captured;
       await tester.pumpWidget(

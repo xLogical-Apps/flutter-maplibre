@@ -36,7 +36,7 @@ class MapLibreInheritedModel extends InheritedModel<MapController> {
 
   @override
   bool updateShouldNotify(covariant MapLibreInheritedModel oldWidget) {
-    return oldWidget.mapController != mapController;
+    return true;
   }
 
   @override
@@ -44,18 +44,18 @@ class MapLibreInheritedModel extends InheritedModel<MapController> {
     covariant MapLibreInheritedModel oldWidget,
     Set<MapController> dependencies,
   ) {
-    return oldWidget.mapController != mapController;
+    return true;
   }
 }
 
 /// Holds the current [MapCamera] of a map and publishes changes only to
 /// widgets that read it.
 ///
-/// The camera changes with every camera event — while following a moving
-/// position that is several hundred times a minute. Rebuilding the map
-/// state for each change produced a Flutter frame per event even when no
-/// child read the camera. The publisher keeps the camera in a plain field
-/// and only forwards it to the [notifier] once a widget has read the
+/// The camera changes with every camera event, which is several hundred
+/// times a minute while the map follows a moving position. Rebuilding the
+/// map state for each change produced a Flutter frame per event even when
+/// no child read the camera. The publisher keeps the camera in a plain
+/// field and only forwards it to the [notifier] once a widget has read the
 /// camera from the tree ([markRead]); until then a camera change marks
 /// nothing dirty and schedules no frame.
 class MapCameraPublisher {
@@ -65,6 +65,7 @@ class MapCameraPublisher {
 
   MapCamera? _camera;
   bool _read = false;
+  bool _disposed = false;
 
   /// The current camera.
   MapCamera? get camera => _camera;
@@ -86,12 +87,17 @@ class MapCameraPublisher {
     // The first read happens during a build; the notifier catches up right
     // after the frame so the reader is not marked dirty mid-build.
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // The map can be disposed in the same frame as the first read.
+      if (_disposed) return;
       notifier.value = _camera;
     });
   }
 
   /// Releases the notifier.
-  void dispose() => notifier.dispose();
+  void dispose() {
+    _disposed = true;
+    notifier.dispose();
+  }
 }
 
 /// Publishes the current [MapCamera] to the [MapLibreMap.children] through
