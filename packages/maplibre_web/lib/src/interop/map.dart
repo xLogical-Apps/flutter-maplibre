@@ -76,6 +76,15 @@ extension type JsMap._(Camera _) implements Camera {
   /// Removes the layer with the given ID from the map's style.
   external void removeLayer(String id);
 
+  /// Sets the value of a layout property in the specified style layer.
+  external void setLayoutProperty(String layerId, String name, JSAny? value);
+
+  /// Sets the value of a paint property in the specified style layer.
+  external void setPaintProperty(String layerId, String name, JSAny? value);
+
+  /// Sets the filter for the specified style layer; `null` removes it.
+  external void setFilter(String layerId, JSAny? filter);
+
   /// Removes the source with the given ID from the map's style.
   external void removeSource(String id);
 

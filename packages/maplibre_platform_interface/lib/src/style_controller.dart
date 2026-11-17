@@ -66,6 +66,32 @@ abstract class StyleController {
   /// offers `fadeDuration` as a map construction option).
   Future<void> setPlacementTransitions({required bool enabled});
 
+  /// Sets a layout property of the layer with the given [layerId], for
+  /// example `visibility` or `text-field`. [value] is the style spec value: a
+  /// constant or an expression as a JSON-like list.
+  ///
+  /// Throws if the layer does not exist.
+  ///
+  /// iOS: `visibility` is applied through `MLNStyleLayer.isVisible`.
+  Future<void> setLayoutProperty(String layerId, String name, Object value);
+
+  /// Sets a paint property of the layer with the given [layerId], for example
+  /// `fill-color` or `heatmap-weight`. [value] is the style spec value: a
+  /// constant or an expression as a JSON-like list.
+  ///
+  /// Throws if the layer does not exist.
+  ///
+  /// Android: the change animates over the style's transition duration once
+  /// [setPlacementTransitions] has written one.
+  Future<void> setPaintProperty(String layerId, String name, Object value);
+
+  /// Sets the filter of the layer with the given [layerId]. [filter] is a
+  /// style spec filter expression as a JSON-like list, `null` removes the
+  /// filter.
+  ///
+  /// Throws if the layer does not exist or is of a type that has no filter.
+  Future<void> setFilter(String layerId, Object? filter);
+
   /// Removes the layer with the given [id] from the map's style.
   Future<void> removeLayer(String id);
 

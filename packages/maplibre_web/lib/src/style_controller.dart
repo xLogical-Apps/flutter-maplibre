@@ -49,6 +49,38 @@ class StyleControllerWeb extends StyleController {
   }
 
   @override
+  Future<void> setLayoutProperty(
+    String layerId,
+    String name,
+    Object value,
+  ) async {
+    _requireLayer(layerId);
+    _map.setLayoutProperty(layerId, name, value.jsify());
+  }
+
+  @override
+  Future<void> setPaintProperty(
+    String layerId,
+    String name,
+    Object value,
+  ) async {
+    _requireLayer(layerId);
+    _map.setPaintProperty(layerId, name, value.jsify());
+  }
+
+  @override
+  Future<void> setFilter(String layerId, Object? filter) async {
+    _requireLayer(layerId);
+    _map.setFilter(layerId, filter.jsify());
+  }
+
+  void _requireLayer(String layerId) {
+    if (_map.getLayer(layerId) == null) {
+      throw Exception('Layer "$layerId" does not exist.');
+    }
+  }
+
+  @override
   Future<List<String>> getAttributions() async => getAttributionsSync();
 
   @override

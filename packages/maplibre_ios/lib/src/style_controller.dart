@@ -239,6 +239,45 @@ class StyleControllerIos extends StyleController {
   }
 
   @override
+  Future<void> setLayoutProperty(
+    String layerId,
+    String name,
+    Object value,
+  ) async {
+    final ffiLayer = _existingLayer(layerId);
+    // `visibility` is not a key-value property of MLNStyleLayer.
+    if (name == 'visibility') {
+      ffiLayer.isVisible = value != 'none';
+      return;
+    }
+    ffiLayer.setProperty(name, value);
+  }
+
+  @override
+  Future<void> setPaintProperty(
+    String layerId,
+    String name,
+    Object value,
+  ) async => _existingLayer(layerId).setProperty(name, value);
+
+  @override
+  Future<void> setFilter(String layerId, Object? filter) async {
+    final ffiLayer = _existingLayer(layerId);
+    if (!MLNVectorStyleLayer.isA(ffiLayer)) {
+      throw Exception('Layer "$layerId" is of a type that has no filter.');
+    }
+    MLNVectorStyleLayer.as(ffiLayer).predicate = filter == null
+        ? null
+        : Helpers.parsePredicateWithRaw(jsonEncode(filter).toNSString());
+  }
+
+  MLNStyleLayer _existingLayer(String layerId) {
+    final ffiLayer = _ffiStyle.layerWithIdentifier(layerId.toNSString());
+    if (ffiLayer == null) throw Exception('Layer "$layerId" does not exist.');
+    return ffiLayer;
+  }
+
+  @override
   Future<void> dispose() async {}
 
   @override

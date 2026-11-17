@@ -261,4 +261,37 @@ class StyleControllerWebView extends StyleController {
   Future<void> setPlacementTransitions({required bool enabled}) async {
     // Not supported in the web view implementation.
   }
+
+  @override
+  Future<void> setLayoutProperty(String layerId, String name, Object value) =>
+      _callOnLayer('setLayoutProperty', layerId, [name, value]);
+
+  @override
+  Future<void> setPaintProperty(String layerId, String name, Object value) =>
+      _callOnLayer('setPaintProperty', layerId, [name, value]);
+
+  @override
+  Future<void> setFilter(String layerId, Object? filter) =>
+      _callOnLayer('setFilter', layerId, [filter]);
+
+  /// Calls `window.map.<method>(layerId, ...args)`; the arguments travel as
+  /// JSON, so no value is interpolated into the script unescaped.
+  Future<void> _callOnLayer(
+    String method,
+    String layerId,
+    List<Object?> args,
+  ) async {
+    final result = await webViewController.callAsyncJavaScript(
+      functionBody:
+          '''
+      const args = ${jsonEncode([layerId, ...args])};
+      if (!window.map.getLayer(args[0])) return false;
+      window.map.$method(...args);
+      return true;
+''',
+    );
+    if (result?.value == false) {
+      throw Exception('Layer "$layerId" does not exist.');
+    }
+  }
 }

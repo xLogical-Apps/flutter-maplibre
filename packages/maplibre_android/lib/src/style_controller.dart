@@ -304,6 +304,76 @@ class StyleControllerAndroid extends StyleController {
       });
 
   @override
+  Future<void> setLayoutProperty(
+    String layerId,
+    String name,
+    Object value,
+  ) async => using((arena) {
+    final jLayer = _existingLayer(layerId, arena);
+    final props = JArray.withLength(jni.PropertyValue.type, 1)
+      ..releasedBy(arena);
+    props[0] = jni.LayoutPropertyValue<JObject?>(
+      name.toJString()..releasedBy(arena),
+      value.toJObject()..releasedBy(arena),
+    )..releasedBy(arena);
+    jLayer.properties = props;
+  });
+
+  @override
+  Future<void> setPaintProperty(
+    String layerId,
+    String name,
+    Object value,
+  ) async => using((arena) {
+    final jLayer = _existingLayer(layerId, arena);
+    final props = JArray.withLength(jni.PropertyValue.type, 1)
+      ..releasedBy(arena);
+    props[0] = jni.PaintPropertyValue<JObject?>(
+      name.toJString()..releasedBy(arena),
+      value.toJObject()..releasedBy(arena),
+    )..releasedBy(arena);
+    jLayer.properties = props;
+  });
+
+  @override
+  Future<void> setFilter(String layerId, Object? filter) async => using((
+    arena,
+  ) {
+    final jLayer = _existingLayer(layerId, arena);
+    // MapLibre Android has no way to remove a filter; `["all"]` without
+    // operands is always true.
+    final jFilterString = jsonEncode(filter ?? const ['all']).toJString()
+      ..releasedBy(arena);
+    final jFilter = jni.Expression$Converter.convert$2(jFilterString);
+    if (jFilter == null) {
+      throw Exception('The filter for layer "$layerId" is not valid.');
+    }
+    jFilter.releasedBy(arena);
+    if (jLayer.isA(jni.FillLayer.type)) {
+      (jLayer.as(jni.FillLayer.type)..releasedBy(arena)).filter = jFilter;
+    } else if (jLayer.isA(jni.LineLayer.type)) {
+      (jLayer.as(jni.LineLayer.type)..releasedBy(arena)).filter = jFilter;
+    } else if (jLayer.isA(jni.SymbolLayer.type)) {
+      (jLayer.as(jni.SymbolLayer.type)..releasedBy(arena)).filter = jFilter;
+    } else if (jLayer.isA(jni.CircleLayer.type)) {
+      (jLayer.as(jni.CircleLayer.type)..releasedBy(arena)).filter = jFilter;
+    } else if (jLayer.isA(jni.HeatmapLayer.type)) {
+      (jLayer.as(jni.HeatmapLayer.type)..releasedBy(arena)).filter = jFilter;
+    } else if (jLayer.isA(jni.FillExtrusionLayer.type)) {
+      (jLayer.as(jni.FillExtrusionLayer.type)..releasedBy(arena)).filter =
+          jFilter;
+    } else {
+      throw Exception('Layer "$layerId" is of a type that has no filter.');
+    }
+  });
+
+  jni.Layer _existingLayer(String layerId, Arena arena) {
+    final jLayer = _jStyle.getLayer(layerId.toJString()..releasedBy(arena));
+    if (jLayer == null) throw Exception('Layer "$layerId" does not exist.');
+    return jLayer..releasedBy(arena);
+  }
+
+  @override
   Future<List<String>> getAttributions() async => getAttributionsSync();
 
   @override
