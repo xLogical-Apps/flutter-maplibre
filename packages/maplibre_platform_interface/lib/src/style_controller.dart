@@ -124,6 +124,9 @@ abstract class StyleController {
       );
       return;
     }
+    // Rendering is asynchronous: the map (and with it the native style) can
+    // be gone by now, e.g. when the style document was replaced.
+    if (isDisposed) return;
     await addImage(id, bytes.buffer.asUint8List());
   }
 
@@ -227,6 +230,9 @@ abstract class StyleController {
       );
       return;
     }
+    // Rendering is asynchronous: the map (and with it the native style) can
+    // be gone by now, e.g. when the style document was replaced.
+    if (isDisposed) return;
     await addImage(id, bytes.buffer.asUint8List());
   }
 
@@ -237,6 +243,13 @@ abstract class StyleController {
   ///
   /// [MapProjection.globe] is currently on supported on web.
   void setProjection(MapProjection projection);
+
+  /// Whether [dispose] has released the native style. Calls on a disposed
+  /// controller have no map to act on.
+  ///
+  /// Platform implementations that hold a native reference override this;
+  /// the default is `false`.
+  bool get isDisposed => false;
 
   /// Clean up resources.
   void dispose();

@@ -240,6 +240,9 @@ class StyleControllerAndroid extends StyleController {
 
   @override
   Future<void> addImage(String id, Uint8List bytes) async => using((arena) {
+    // A released style reference must not be dereferenced: the call would
+    // crash the process (null pointer in JNI) instead of throwing.
+    if (_jStyle.isReleased) return;
     final jId = id.toJString()..releasedBy(arena);
     final pixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
     final targetDensity = (pixelRatio * 160).round();
@@ -336,6 +339,9 @@ class StyleControllerAndroid extends StyleController {
     }
     return ids;
   });
+
+  @override
+  bool get isDisposed => _jStyle.isReleased;
 
   @override
   void dispose() {
